@@ -8,7 +8,8 @@ import torch.optim as optim
 import cv2
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-from sklearn.metrics import accuracy_score
+import torchmetrics
+
 
 class LeNet(pl.LightningModule):
     def __init__(self):
@@ -20,7 +21,9 @@ class LeNet(pl.LightningModule):
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, 7)
         self.criterion = nn.CrossEntropyLoss()
-        # self.accuracy = Accuracy(task='multiclass')
+        self.accuracy = torchmetrics.classification.Accuracy(
+            task="multiclass", num_classes=7
+        )
 
     def forward(self, x):
         # print(x.shape)
@@ -54,6 +57,14 @@ class LeNet(pl.LightningModule):
             )
             grid = torchvision.utils.make_grid(inputs)
             self.logger.experiment.add_image("input_images", grid, self.current_epoch)
+            self.log(
+                "train_acc",
+                self.accuracy(outputs, torch.argmax(labels, dim=1)),
+                on_step=False,
+                on_epoch=True,
+                prog_bar=True,
+                logger=True,
+            )
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -63,7 +74,14 @@ class LeNet(pl.LightningModule):
         self.log(
             "val_loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True
         )
-        # self.log('val_acc', self.accuracy(outputs, labels), on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log(
+            "val_acc",
+            self.accuracy(outputs, torch.argmax(labels, dim=1)),
+            on_step=False,
+            on_epoch=True,
+            prog_bar=True,
+            logger=True,
+        )
 
     def configure_optimizers(self):
         optimizer = optim.SGD(self.parameters(), lr=0.001, momentum=0.9)
