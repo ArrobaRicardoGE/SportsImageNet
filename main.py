@@ -10,7 +10,8 @@ import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
 from PIL import Image
 
-from model import LeNet
+from model import LeNet, MiniAlexNet
+
 
 class ImgDataset(torch.utils.data.Dataset):
     def __init__(self, paths, labels, transform):
@@ -22,19 +23,23 @@ class ImgDataset(torch.utils.data.Dataset):
         return len(self.paths)
 
     def __getitem__(self, idx):
-        img = Image.open(f"dataset/train/{self.paths[idx]}").convert('RGB')
+        img = Image.open(f"dataset/train/{self.paths[idx]}").convert("RGB")
         return self.transform(img), self.labels[idx]
 
 
 # Data loading and transformations
 transform = transforms.Compose(
-    [transforms.Resize((224, 224)), transforms.ToTensor(), transforms.Normalize((0.5,), (0.5,))]
+    [
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize((0.5,), (0.5,)),
+    ]
 )
 
 df = pd.read_csv("dataset/train.csv")
 print(df.label.values)
 lb = LabelBinarizer()
-labels = lb.fit_transform(df.label.values).astype('f')
+labels = lb.fit_transform(df.label.values).astype("f")
 print(labels)
 print(lb.classes_)
 trainset = ImgDataset(df.image_ID.values[:6000], labels[:6000], transform)
@@ -45,5 +50,9 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 
 # Creating a PyTorch Lightning model and trainer
 model = LeNet()
-trainer = pl.Trainer(max_epochs=10)
-trainer.fit(model, trainloader, testloader)
+trainer = pl.Trainer(max_epochs=300)
+trainer.fit(
+    model,
+    trainloader,
+    testloader,
+)

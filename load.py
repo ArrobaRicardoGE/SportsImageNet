@@ -4,12 +4,14 @@ import torchvision.transforms as transforms
 import torch
 
 model = LeNet.load_from_checkpoint(
-    "/Users/arroba/Documents/UP/code/ProyectoFinal/lightning_logs/version_36/checkpoints/epoch=25-step=2444.ckpt"
+    "/Users/arroba/Documents/UP/code/ProyectoFinal/lightning_logs/version_15/checkpoints/epoch=99-step=9400.ckpt"
 )
 
 model = model.eval()
 
-img = Image.open(f"dataset/test-resized/c4fbe789fc.png")
+img = Image.open(
+    f"/Users/arroba/Documents/UP/code/ProyectoFinal/dataset/test/00b1df8c4f.jpg"
+)
 
 transform = transforms.Compose(
     [
