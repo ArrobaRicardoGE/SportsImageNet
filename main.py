@@ -12,9 +12,6 @@ from PIL import Image
 
 from model import LeNet
 
-# from torchmetrics import Accuracy
-
-
 class ImgDataset(torch.utils.data.Dataset):
     def __init__(self, paths, labels, transform):
         self.paths = paths
@@ -25,10 +22,7 @@ class ImgDataset(torch.utils.data.Dataset):
         return len(self.paths)
 
     def __getitem__(self, idx):
-        # img = torchvision.io.read_image(f"dataset/train-resized/{self.paths[idx].replace('.jpg', '.png')}")
-        # img = cv2.imread(f"dataset/train-resized/{self.paths[idx].replace('.jpg', '.png')}")
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img = Image.open(f"dataset/train-resized/{self.paths[idx].replace('jpg', 'png')}")
+        img = Image.open(f"dataset/train/{self.paths[idx]}").convert('RGB')
         return self.transform(img), self.labels[idx]
 
 

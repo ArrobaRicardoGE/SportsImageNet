@@ -1,25 +1,21 @@
 import pytorch_lightning as pl
 import torch
 import torchvision
-import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import cv2
-import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 import torchmetrics
 
 
 class LeNet(pl.LightningModule):
     def __init__(self):
         super(LeNet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 6, 5)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(6, 16, 5)
-        self.fc1 = nn.Linear(16 * 53 * 53, 120)
-        self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 7)
+        self.conv1 = nn.Conv2d(3, 96, 11, stride=4)
+        self.pool = nn.MaxPool2d(3, 3)
+        self.conv2 = nn.Conv2d(96, 256, 5)
+        self.fc1 = nn.Linear(256 * 4 * 4, 1024)
+        self.fc2 = nn.Linear(1024, 512)
+        self.fc3 = nn.Linear(512, 7)
         self.criterion = nn.CrossEntropyLoss()
         self.accuracy = torchmetrics.classification.Accuracy(
             task="multiclass", num_classes=7
@@ -31,7 +27,7 @@ class LeNet(pl.LightningModule):
         # print(x.shape)
         x = self.pool(F.relu(self.conv2(x)))
         # print(x.shape)
-        x = x.view(-1, 16 * 53 * 53)
+        x = x.view(-1, 256 * 4 * 4)
         # print(x.shape)
         x = F.relu(self.fc1(x))
         # print(x.shape)
