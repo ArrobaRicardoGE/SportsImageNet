@@ -1,28 +1,41 @@
-from model import LeNet
+from model import SportsNet
 from PIL import Image
 import torchvision.transforms as transforms
 import torch
+import argparse
 
-model = LeNet.load_from_checkpoint(
-    "/Users/arroba/Documents/UP/code/ProyectoFinal/lightning_logs/version_15/checkpoints/epoch=99-step=9400.ckpt"
+classes = [
+    "Badminton",
+    "Cricket",
+    "Karate",
+    "Soccer",
+    "Swimming",
+    "Tennis",
+    "Wrestling",
+]
+
+model = SportsNet.load_from_checkpoint(
+    "lightning_logs/version_33/checkpoints/epoch=250-step=24347.ckpt"
 )
-
 model = model.eval()
 
-img = Image.open(
-    f"/Users/arroba/Documents/UP/code/ProyectoFinal/dataset/test/00b1df8c4f.jpg"
-)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("img")
+    args = parser.parse_args()
+    img = Image.open(args.img).convert("RGB")
 
-transform = transforms.Compose(
-    [
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,)),
-    ]
-)
+    transform = transforms.Compose(
+        [
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize((0.5,), (0.5,)),
+        ]
+    )
 
-img = transform(img)
-out = model(img.to(model.device))
+    img = transform(img)
+    out = model(img.to(model.device))
 
-print(out)
-print(torch.max(out, 1))
+    print(out)
+    print(torch.argmax(out, 1).item())
+    print(classes[torch.argmax(out, 1).item()])

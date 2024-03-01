@@ -4,13 +4,12 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-import cv2
 import pandas as pd
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.model_selection import train_test_split
 from PIL import Image
 
-from model import LeNet, MiniAlexNet
+from model import SportsNet
 
 
 class ImgDataset(torch.utils.data.Dataset):
@@ -42,15 +41,20 @@ lb = LabelBinarizer()
 labels = lb.fit_transform(df.label.values).astype("f")
 print(labels)
 print(lb.classes_)
-trainset = ImgDataset(df.image_ID.values[:6000], labels[:6000], transform)
+
+X_train, X_val, y_train, y_val = train_test_split(
+    df.image_ID.values, labels, test_size=0.25, random_state=62, stratify=labels
+)
+
+trainset = ImgDataset(X_train, y_train, transform)
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
 
-testset = ImgDataset(df.image_ID.values[6000:], labels[6000:], transform)
+testset = ImgDataset(X_val, y_val, transform)
 testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=False)
 
 # Creating a PyTorch Lightning model and trainer
-model = LeNet()
-trainer = pl.Trainer(max_epochs=300)
+model = SportsNet()
+trainer = pl.Trainer(max_epochs=250)
 trainer.fit(
     model,
     trainloader,
